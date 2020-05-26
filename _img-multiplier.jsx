@@ -25,7 +25,7 @@ function readText() {
 var activeComp = app.project.activeItem;
 
 // Check if we really have a composition
-if (activeComp != null && (activeComp instanceof CompItem)){
+if (activeComp != null && (activeComp instanceof CompItem)) {
 
     // Change output location
     var outputFolder = Folder.selectDialog('Choose Save Location', '');
@@ -33,12 +33,13 @@ if (activeComp != null && (activeComp instanceof CompItem)){
     // Get all the selected layers
     var selectedLayers = activeComp.selectedLayers;
 
-    // Manipulate with source text by cycle through textLines array
+    // Manipulate with source images by cycle through textLines array
     textLines = readText();
     for (var i = 0; i < textLines.length; i++) {
         for (var j = 0; j < selectedLayers.length; j++) {
 
-            selectedLayers[j].sourceText.setValue(textLines[i]);
+            var sourceImg = new ImportOptions(File(textLines[i])); // FIX - doesn't work because of type of import
+            selectedLayers[j].replaceSource(sourceImg, true);
 
             var saveFolder = new Folder(outputFolder);
                 if (! saveFolder.exist) {
