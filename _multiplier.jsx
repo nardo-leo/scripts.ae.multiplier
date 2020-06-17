@@ -1,13 +1,25 @@
 // Get text line by line from text file to array
 function readText() {
 
-    var textFile = File.openDialog('Choose Text File');
+    var textFile = File.openDialog('Choose Dataset');
     var textLines = [];
 
     if (textFile != null) {
         textFile.open('r');
         while(!textFile.eof) {
-            textLines[textLines.length] = textFile.readln();
+            textLines[textLines.length] = textFile.readln(); // lines
+        }
+        // separate lines to columns
+        var columns = [];
+        for (var i = 0; i < textLines.length; i++) {
+            var cells = textLines[i].split(','); // cells
+            for (var j = 0; j < cells.length; j++){
+                if (i == 0) {
+                    columns.push([cells[j]]); // fill column's header
+                } else {
+                    columns[j].push(cells[j]); // fill columns
+                }
+            }
         }
         textFile.close();
     }
@@ -48,7 +60,7 @@ if (activeComp != null && (activeComp instanceof CompItem)){
             // Add composition to render queue
             var item = app.project.renderQueue.items.add(activeComp);
             var outputModule = item.outputModule(1);
-            outputModule.applyTemplate('Lossless'); // Get possibility to choose it
+            outputModule.applyTemplate('Lossless'); // TODO Get possibility to choose it
             outputModule.file = File(String(saveFolder) + '/' + activeComp.name + '#' + (i + 1));
 
             // Render
