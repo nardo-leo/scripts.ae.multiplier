@@ -7,6 +7,7 @@ function readDatasetColumns(textFile) {
         while(!textFile.eof) {
             textLines[textLines.length] = textFile.readln(); // lines
         }
+
         // separate lines to columns
         var columns = [];
         for (var i = 0; i < textLines.length; i++) {
@@ -52,7 +53,7 @@ function pushToRender(activeComp, saveFolder, c, l) {
     var item = app.project.renderQueue.items.add(activeComp);
     var outputModule = item.outputModule(1);
     outputModule.applyTemplate('Lossless'); // TODO Get possibility to choose it
-    outputModule.file = File(String(saveFolder) + '/' + activeComp.name + '#' + l + '-' + (c + 1));
+    outputModule.file = File(String(saveFolder) + '/' + activeComp.name + '#' + l);
 
     // Render
     app.project.renderQueue.render();
@@ -77,7 +78,7 @@ function main() {
         var outputFolder = Folder.selectDialog('Choose Save Location', '');
 
         // Get all the selected layers
-        var selectedLayers = activeComp.selectedLayers; // TODO mark layers to distinguish layers
+        var selectedLayers = activeComp.selectedLayers;
 
         // Manipulate with source text by cycle through columns array
         var columns = readDatasetColumns(textFile);
@@ -90,6 +91,7 @@ function main() {
                 imgFolder = app.project.item(i);
             }
         }
+
         // Check if don't find img folder
         if (imgFolder == '') {
             alert("Can't find folder 'img'");
@@ -97,20 +99,31 @@ function main() {
         }
 
         // Change content
-        // Avoid line #0 because it's header
-        for (var l = 1; l < lines.length; l++) {
+        var textColumn;
+        var imgColumn;
+        for (var l = 0; l < lines.length; l++) {
             for (var c = 0; c < columns.length; c++) {
+                if (l == 0 && c == 0) { // choose column type
+                    for (var f = 0; f < columns.length; f++) {
+                        if (columns[f][0].charAt(0) == '^') {
+                            textColumn = columns[f]; // text column
+                        } else if (columns[f][0].charAt(0) == '#') {
+                            imgColumn = columns[f]; // img column
+                        }
+                    }
+                    l++; // switch to next line
+                }
                 for (var s = 0; s < selectedLayers.length; s++) {
 
                     var layerName = selectedLayers[s].name;
                     var layerStartsWith = layerName.charAt(0);
 
                     if (layerStartsWith == '^') { // change text
-                        selectedLayers[s].sourceText.setValue(columns[c][l]);
+                        selectedLayers[s].sourceText.setValue(textColumn[l]);
                     }
                     else if (layerStartsWith == '#') { // change image
                         for (var i = 1; i <= imgFolder.numItems; i++) {
-                            if (imgFolder.item(i).name == columns[c][l]) { //FIXME can't bypass inside
+                            if (imgFolder.item(i).name == imgColumn[l]) {
                                 selectedLayers[s].replaceSource(imgFolder.item(i), true);
                             }
                         }
@@ -123,11 +136,11 @@ function main() {
                         if (! saveFolder.exist) {
                             saveFolder.create();
                         }
-
-                    // Push composition to render queue
-                    // pushToRender(activeComp, saveFolder, c, l);
                 }
             }
+
+            // Push composition to render queue
+            pushToRender(activeComp, saveFolder, c, l);
         }
     }
 }
