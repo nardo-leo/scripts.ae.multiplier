@@ -48,22 +48,6 @@ function readDatasetLines(textFile) {
 }
 
 
-function pushToRender(activeComp, saveFolder, c, l) {
-
-    var item = app.project.renderQueue.items.add(activeComp);
-    var outputModule = item.outputModule(1);
-    outputModule.applyTemplate('Lossless'); // TODO Get possibility to choose it
-    outputModule.file = File(String(saveFolder) + '/' + activeComp.name + '#' + l);
-
-    // Render
-    app.project.renderQueue.render();
-
-    // Sending to AME instead
-    // app.project.renderQueue.queueInAME(true);
-
-}
-
-
 function main() {
     // Get the active composition
     var activeComp = app.project.activeItem;
@@ -76,6 +60,16 @@ function main() {
 
         // Change output location
         var outputFolder = Folder.selectDialog('Choose Save Location', '');
+
+        // Draw menu to choose render template
+        var item = app.project.renderQueue.items.add(activeComp);
+        var outputModule = item.outputModule(1);
+        var dlg = new Window('dialog', 'Choose Render Template');
+        var tempList = outputModule.templates;
+        var template = dlg.add('dropdownlist', undefined, tempList);
+        var btnOk = dlg.add('button', [10, 10, 100, 30], 'OK');
+        dlg.show();
+        var renderTemp = template.selection.text;
 
         // Get all the selected layers
         var selectedLayers = activeComp.selectedLayers;
@@ -140,7 +134,14 @@ function main() {
             }
 
             // Push composition to render queue
-            pushToRender(activeComp, saveFolder, c, l);
+            outputModule.applyTemplate(renderTemp); // FIXME can't call func when RenderQueueItem status is RENDERING, STOPPED or DONE
+            outputModule.file = File(String(saveFolder) + '/' + activeComp.name + '#' + l);
+
+            // Render
+            app.project.renderQueue.render();
+
+            // TODO Sending to AME instead
+            // app.project.renderQueue.queueInAME(true);
         }
     }
 }
