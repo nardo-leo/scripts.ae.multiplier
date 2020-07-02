@@ -62,6 +62,7 @@ function main() {
         var outputFolder = Folder.selectDialog('Choose Save Location', '');
 
         // Draw menu to choose render template
+        // FIXME mb it's doesn't matter?
         var item = app.project.renderQueue.items.add(activeComp);
         var outputModule = item.outputModule(1);
         var dlg = new Window('dialog', 'Choose Render Template');
@@ -134,14 +135,9 @@ function main() {
             }
 
             // Push composition to render queue
-            outputModule.applyTemplate(renderTemp); // FIXME can't call func when RenderQueueItem status is RENDERING, STOPPED or DONE
+            outputModule.applyTemplate(renderTemp);
             outputModule.file = File(String(saveFolder) + '/' + activeComp.name + '#' + l);
-
-            // Render
-            app.project.renderQueue.render();
-
-            // TODO Sending to AME instead
-            // app.project.renderQueue.queueInAME(true);
+            app.project.renderQueue.queueInAME(true);
         }
     }
 }
